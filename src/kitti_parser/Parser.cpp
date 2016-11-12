@@ -3,6 +3,7 @@
 #include <algorithm>
 #include <boost/filesystem.hpp>
 #include <boost/range/iterator_range.hpp>
+#include <yaml-cpp/yaml.h>
 #include <kitti_parser/types/stereo_t.h>
 #include <kitti_parser/types/lidar_t.h>
 #include <kitti_parser/types/gpsimu_t.h>
@@ -41,21 +42,24 @@ Parser::Parser(std::string path) {
 
     // Check to see if configuration file CAM to CAM
     if(boost::filesystem::exists(config.path_calib_cc)) {
-        // TODO: Load in the config file
+        // Load in the config file
+        config.calib_cc = YAML::LoadFile(config.path_calib_cc);
         // Set enabled
         config.has_calib_cc = true;
     }
 
     // Check to see if configuration file IMU to VELO
     if(boost::filesystem::exists(config.path_calib_iv)) {
-        // TODO: Load in the config file
+        // Load in the config file
+        config.calib_iv = YAML::LoadFile(config.path_calib_iv);
         // Set enabled
         config.has_calib_iv = true;
     }
 
     // Check to see if configuration file VELO to CAM
     if(boost::filesystem::exists(config.path_calib_vc)) {
-        // TODO: Load in the config file
+        // Load in the config file
+        config.calib_vc = YAML::LoadFile(config.path_calib_vc);
         // Set enabled
         config.has_calib_vc = true;
     }

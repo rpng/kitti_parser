@@ -48,6 +48,7 @@ Point to the "day" folder where it has all the different sequences in it. It loo
 ## Dependencies
 
 * OpenCV 3.0 - http://opencv.org/
+* Yaml-Cpp (included) - https://github.com/jbeder/yaml-cpp
 * Boost Library - `sudo apt-get install libboost-all-dev`
 
 

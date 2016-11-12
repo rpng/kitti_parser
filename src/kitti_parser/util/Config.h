@@ -3,6 +3,7 @@
 
 #include <string>
 #include <iostream>
+#include <yaml-cpp/yaml.h>
 
 
 namespace kitti_parser {
@@ -30,8 +31,10 @@ namespace kitti_parser {
         bool has_calib_vc = false;
 
 
-        // TODO: Store the config data here
-
+        // Store the config data here
+        YAML::Node calib_cc;
+        YAML::Node calib_iv;
+        YAML::Node calib_vc;
 
 
     };

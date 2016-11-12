@@ -34,9 +34,11 @@ set(LIBRARY_FILES
     src/kitti_parser/util/Loader.cpp
 )
 
+# Include yaml-cpp source files in build
+file(GLOB sources_yaml src/yaml-cpp/*.cpp)
 
 # Create the core library (excludes the main file)
-add_library(kitti_parser STATIC ${LIBRARY_FILES})
+add_library(kitti_parser STATIC ${LIBRARY_FILES} ${sources_yaml})
 
 # Now specify what type of library, a cpp and public
 set_target_properties(kitti_parser PROPERTIES LINKER_LANGUAGE CXX)
