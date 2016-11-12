@@ -9,6 +9,7 @@
 #include <opencv2/highgui/highgui.hpp>
 #include <boost/filesystem/path.hpp>
 #include <boost/filesystem.hpp>
+#include <kitti_parser/types/gpsimu_t.h>
 
 using namespace std;
 using namespace kitti_parser;
@@ -68,8 +69,16 @@ void Loader::load_all(std::string path) {
     }
 
 
-    // TODO: Do the GPS/IMU reading here
-    config->has_gpsimu = false;
+    // Do the GPS/IMU data reading here
+    if(config->has_gpsimu) {
+        load_gpsimu(path+"/oxts/", time_gpsimu, path_gpsimu);
+
+        // Load index values
+        if(time_gpsimu.size() > 0) {
+            idx_gps = 0;
+            curr_gps = time_gpsimu.at(0);
+        }
+    }
 
     // Debug
     //cout << "Loaded the following files:" << endl;
@@ -181,6 +190,31 @@ void Loader::load_lidar(std::string path_lidar,
     }
 }
 
+/**
+ * This will read in the GPS/IMU timestamp file
+ * From this it will also create the paths needed
+ */
+void Loader::load_gpsimu(std::string path_gpsimu, std::vector<long>& time, std::vector<std::string>& path) {
+
+    // Load the timestamps for this type
+    int count = 0;
+    load_timestamps(path_gpsimu+"timestamps.txt", time, count);
+
+    // Loop through all sub folders, assume they are sequential
+    // http://www.boost.org/doc/libs/1_47_0/libs/filesystem/v3/example/tut4.cpp
+    boost::filesystem::path p1(path_gpsimu+"data/");
+    vector<boost::filesystem::path> v1;
+    copy(boost::filesystem::directory_iterator(p1), boost::filesystem::directory_iterator(), back_inserter(v1));
+    sort(v1.begin(), v1.end());
+
+    // Append them
+    for (vector<boost::filesystem::path>::const_iterator it(v1.begin()), it_end(v1.end()); it != it_end; ++it) {
+        path.push_back((*it).c_str());
+    }
+}
+
+
+
 Loader::message_types* Loader::fetch_latest() {
 
     // Return value
@@ -210,7 +244,7 @@ Loader::message_types* Loader::fetch_latest() {
     }
     // See if LIDAR vs GPS is better
     else if((curr_lidar < curr_gps || !config->has_gpsimu) && curr_lidar != LONG_MAX) {
-        // Get next measurment
+        // Get next measurement
         next = new message_types(fetch_lidar(idx_lidar));
         // Move time forward
         idx_lidar++;
@@ -219,10 +253,12 @@ Loader::message_types* Loader::fetch_latest() {
     }
     // See if GPS/IMU measurement is there
     else if(curr_gps != LONG_MAX) {
+        // Get next measurement
+        next = new message_types(fetch_gpsimu(idx_gps));
         // Move time forward
-        //idx_gps++;
-        //curr_gps = (idx_gps == time.size())? LONG_MAX : time.at(idx_gps);
-        //return next;
+        idx_gps++;
+        curr_gps = (idx_gps == time_gpsimu.size())? LONG_MAX : time_gpsimu.at(idx_gps);
+        return next;
     }
 
     // Default, we have no measurment to give
@@ -308,3 +344,65 @@ lidar_t* Loader::fetch_lidar(size_t idx) {
     return temp;
 
 }
+
+
+gpsimu_t* Loader::fetch_gpsimu(size_t idx) {
+
+    // Make new measurement
+    gpsimu_t* next = new gpsimu_t;
+    next->timestamp = time_gpsimu.at(idx);
+
+    // Read in file of doubles
+    std::vector<double> values;
+    std::ifstream ifile(path_gpsimu.at(idx), std::ios::in);
+
+    // Keep storing values from the text file so long as data exists:
+    double num = 0.0;
+    while (ifile >> num) {
+        values.push_back(num);
+    }
+
+
+    // Set values, see the file for details on each one
+    next->lat = values.at(0);
+    next->lon = values.at(1);
+    next->alt = values.at(2);
+    next->roll = values.at(3);
+    next->pitch = values.at(4);
+    next->yaw = values.at(5);
+
+    next->vn = values.at(6);
+    next->ve = values.at(7);
+    next->vf = values.at(8);
+    next->vl = values.at(9);
+    next->vu = values.at(10);
+
+    next->ax = values.at(11);
+    next->ay = values.at(12);
+    next->az = values.at(13);
+    next->af = values.at(14);
+    next->al = values.at(15);
+    next->au = values.at(16);
+    next->wx = values.at(17);
+    next->wy = values.at(18);
+    next->wz = values.at(19);
+    next->wf = values.at(20);
+    next->wl = values.at(21);
+    next->wu = values.at(22);
+
+    next->pos_accuracy = values.at(23);
+    next->vel_accuracy = values.at(24);
+
+
+    next->navstat = (int)values.at(25);
+    next->numsats = (int)values.at(26);
+    next->posmode = (int)values.at(27);
+    next->velmode = (int)values.at(28);
+    next->orimode = (int)values.at(29);
+
+
+    // Return it
+    return next;
+
+}
+

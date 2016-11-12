@@ -49,6 +49,9 @@ int main(int argc, char** argv) {
     cout << "\tGPS/IMU to Velo: " << std::boolalpha << parser.getConfig().has_calib_iv << endl;
     cout << "\tVelo to Cam: " << std::boolalpha << parser.getConfig().has_calib_vc << endl;
 
+    // Print config
+    //cout << parser.getConfig().calib_cc << endl;
+
 
     // Register the functions
     parser.register_callback_stereo_gray(&handle_stereo_gray);

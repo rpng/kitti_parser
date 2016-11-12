@@ -1,6 +1,7 @@
 #include <iostream>
 #include <kitti_parser/types/stereo_t.h>
 #include <kitti_parser/types/lidar_t.h>
+#include <kitti_parser/types/gpsimu_t.h>
 #include "kitti_parser/Parser.h"
 
 
@@ -11,6 +12,7 @@ using namespace kitti_parser;
 
 void handle_stereo(Config* config, long timestamp, stereo_t* data);
 void handle_lidar(Config* config, long timestamp, lidar_t* data);
+void handle_gps(Config* config, long timestamp, gpsimu_t* data);
 
 int main(int argc, char** argv) {
 
@@ -53,6 +55,7 @@ int main(int argc, char** argv) {
     parser.register_callback_stereo_gray(&handle_stereo);
     parser.register_callback_stereo_color(&handle_stereo);
     parser.register_callback_lidar(&handle_lidar);
+    parser.register_callback_gpsimu(&handle_gps);
 
     // TODO: Start the parser at normal speed
     parser.run(1.0);
@@ -82,6 +85,16 @@ void handle_lidar(Config* config, long timestamp, lidar_t* data) {
     cout << "Got new LIDAR bin: " << timestamp << " (" << data->points.at(0).at(0) << ","
          << data->points.at(0).at(1) << "," << data->points.at(0).at(2) << "," << data->points.at(0).at(3) << ")" << endl;
 
+    // Free the data once done
+    free(data);
+}
+
+
+/**
+ * Test callback function for GPS/IMU messages
+ */
+void handle_gps(Config* config, long timestamp, gpsimu_t* data) {
+    cout << "Got new GPS/IMU bin: " << timestamp << " - " << data->lat << " | " << data->lon << endl;
     // Free the data once done
     free(data);
 }
