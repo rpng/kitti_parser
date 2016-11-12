@@ -5,7 +5,7 @@ namespace kitti_parser {
 
     typedef struct {
 
-        unsigned long timestamp;
+        long timestamp;
 
         // lat:   latitude of the oxts-unit (deg)
         double lat;

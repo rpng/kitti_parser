@@ -1,6 +1,8 @@
 #include "kitti_parser/Parser.h"
 #include <boost/filesystem.hpp>
 #include <kitti_parser/types/stereo_t.h>
+#include <kitti_parser/types/lidar_t.h>
+#include <kitti_parser/types/gpsimu_t.h>
 
 
 using namespace std;
@@ -93,19 +95,19 @@ Config Parser::getConfig() {
 }
 
 
-void Parser::register_callback_stereo_gray(std::function<void(Config*,unsigned long, stereo_t*)> callback) {
+void Parser::register_callback_stereo_gray(std::function<void(Config*,long, stereo_t*)> callback) {
     callback_stereo_gray = callback;
 }
 
-void Parser::register_callback_stereo_color(std::function<void(Config *, unsigned long, stereo_t *)> callback) {
+void Parser::register_callback_stereo_color(std::function<void(Config *, long, stereo_t *)> callback) {
     callback_stereo_color = callback;
 }
 
-void Parser::register_callback_lidar(std::function<void(Config *, unsigned long, lidar_t *)> callback) {
+void Parser::register_callback_lidar(std::function<void(Config *, long, lidar_t *)> callback) {
     callback_lidar = callback;
 }
 
-void Parser::register_callback_gpsimu(std::function<void(Config *, unsigned long, gpsimu_t *)> callback) {
+void Parser::register_callback_gpsimu(std::function<void(Config *, long, gpsimu_t *)> callback) {
     callback_gpsimu = callback;
 }
 
@@ -116,28 +118,53 @@ void Parser::register_callback_gpsimu(std::function<void(Config *, unsigned long
  */
 void Parser::run(double time_multi) {
 
+    // Load the first message
+    Loader::message_types* next = loader->fetch_latest();
 
-    cout << "RUN FUNCTION HAS BEEN CALLED" << endl;
+    // Loop till we run out of message to send
+    // http://stackoverflow.com/a/5685578
+    while(next != nullptr) {
 
-    stereo_t temp;
-    temp.height = 100;
-    temp.width = 100;
+        // Call the respective callbacks based on that type
+        switch (next->which()) {
+            // it's an stereo_t
+            case 0: {
+                stereo_t *temp_s = boost::get<stereo_t *>(*next);
+                // Send, and check if valid function
+                if (temp_s->is_color && callback_stereo_color){
+                    callback_stereo_color.operator()(&config, temp_s->timestamp, temp_s);
+                }
+                // Check if function has been set
+                else if(!temp_s->is_color && callback_stereo_gray) {
+                    callback_stereo_gray.operator()(&config, temp_s->timestamp, temp_s);
+                }
 
-    cout <<  loader->fetch_latest().which() << endl;
-    cout <<  loader->fetch_latest().which() << endl;
-    cout <<  loader->fetch_latest().which() << endl;
-    cout <<  loader->fetch_latest().which() << endl;
-    cout <<  loader->fetch_latest().which() << endl;
+                break;
+            }
+            // it's a lidar_t
+            case 1: {
+                lidar_t *temp_v = boost::get<lidar_t *>(*next);
+                // Check if function has been set
+                if(callback_lidar) {
+                    callback_lidar.operator()(&config, temp_v->timestamp, temp_v);
+                }
+                break;
+            }
+            // it's a gpsimu_t
+            case 2: {
+                gpsimu_t *temp_g = boost::get<gpsimu_t *>(*next);
+                // Check if function has been set
+                if(callback_gpsimu) {
+                    callback_gpsimu.operator()(&config, temp_g->timestamp, temp_g);
+                }
+                break;
+            }
+        }
 
-    // Call the callbacks
-    callback_stereo_gray.operator()(&config,0,&temp);
-    sleep(1);
-    callback_stereo_gray.operator()(&config,20,&temp);
-    sleep(1);
-    callback_stereo_gray.operator()(&config,30,&temp);
-    sleep(1);
-    callback_stereo_gray.operator()(&config,40,&temp);
 
+        // Get the next message from the loader
+        next = loader->fetch_latest();
+    }
 
 }
 

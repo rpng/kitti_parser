@@ -8,7 +8,7 @@ using namespace std;
 using namespace kitti_parser;
 
 
-void handle_stereo(Config* config, unsigned long timestamp, stereo_t* data);
+void handle_stereo(Config* config, long timestamp, stereo_t* data);
 
 
 int main(int argc, char** argv) {
@@ -50,6 +50,7 @@ int main(int argc, char** argv) {
 
     // Register the functions
     parser.register_callback_stereo_gray(&handle_stereo);
+    parser.register_callback_stereo_color(&handle_stereo);
 
     // TODO: Start the parser at normal speed
     parser.run(1.0);
@@ -64,9 +65,9 @@ int main(int argc, char** argv) {
 /**
  * Test callback function for stereo images
  */
-void handle_stereo(Config* config, unsigned long timestamp, stereo_t* data) {
+void handle_stereo(Config* config, long timestamp, stereo_t* data) {
     cout << "Got new stereo image: " << timestamp <<
-         " (" << data->width << "," << data->width << ")" << endl;
+         " (" << data->width << "," << data->width << ") -> " << data->is_color << endl;
 }
 
 

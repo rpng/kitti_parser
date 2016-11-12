@@ -5,9 +5,9 @@ namespace kitti_parser {
 
     typedef struct {
 
-        unsigned long timestamp;
-        unsigned long timestamp_start;
-        unsigned long timestamp_end;
+        long timestamp;
+        long timestamp_start;
+        long timestamp_end;
 
         int num_points;
 

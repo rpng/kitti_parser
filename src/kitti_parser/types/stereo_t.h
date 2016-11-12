@@ -7,7 +7,9 @@ namespace kitti_parser {
 
     typedef struct {
 
-        unsigned long timestamp;
+        long timestamp;
+
+        bool is_color;
 
         int width;
         int height;

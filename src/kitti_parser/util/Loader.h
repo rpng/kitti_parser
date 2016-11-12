@@ -30,7 +30,7 @@ namespace kitti_parser {
 
         // Fetches the latest measurement that should be processed
         typedef boost::variant<stereo_t*, lidar_t*, gpsimu_t*> message_types;
-        message_types fetch_latest();
+        message_types* fetch_latest();
 
 
 
@@ -55,6 +55,17 @@ namespace kitti_parser {
         std::vector<std::string> path_lidar;
 
 
+        // Master index values
+        long curr_sg = LONG_MAX;
+        long curr_sc = LONG_MAX;
+        long curr_lidar = LONG_MAX;
+        long curr_gps = LONG_MAX;
+        size_t idx_sg = 0;
+        size_t idx_sc = 0;
+        size_t idx_lidar = 0;
+        size_t idx_gps = 0;
+
+
         // Private functions to load each type
         void load_timestamps(std::string path_timestamp, std::vector<long>& time);
 
@@ -64,6 +75,9 @@ namespace kitti_parser {
                         std::vector<long>& time_avg, std::vector<long>& time_start,
                         std::vector<long>& time_end, std::vector<std::string>& pathB);
 
+
+        // Fetch commands, constructs the actual datatype
+        stereo_t* fetch_stereo(size_t idx, bool is_color);
 
 
     };

@@ -11,7 +11,7 @@ SET(CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake/)
 #find_package(LCM REQUIRED)
 #find_package(Eigen3 REQUIRED)
 find_package(Boost REQUIRED COMPONENTS system filesystem thread date_time)
-find_package(OpenCV 3 REQUIRED core plot videoio ximgproc xfeatures2d)
+find_package(OpenCV 3 REQUIRED core plot videoio ximgproc)
 
 
 # Try to compile with c++11

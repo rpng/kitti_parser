@@ -26,10 +26,10 @@ namespace kitti_parser {
         Config getConfig();
 
         // Register callback functions
-        void register_callback_stereo_gray(std::function<void(Config*,unsigned long, stereo_t*)> callback);
-        void register_callback_stereo_color(std::function<void(Config*,unsigned long, stereo_t*)> callback);
-        void register_callback_lidar(std::function<void(Config*,unsigned long, lidar_t*)> callback);
-        void register_callback_gpsimu(std::function<void(Config*,unsigned long, gpsimu_t*)> callback);
+        void register_callback_stereo_gray(std::function<void(Config*,long, stereo_t*)> callback);
+        void register_callback_stereo_color(std::function<void(Config*,long, stereo_t*)> callback);
+        void register_callback_lidar(std::function<void(Config*,long, lidar_t*)> callback);
+        void register_callback_gpsimu(std::function<void(Config*,long, gpsimu_t*)> callback);
 
         // Main run function, will call callbacks
         void run(double time_multi);
@@ -44,10 +44,10 @@ namespace kitti_parser {
         Loader* loader;
 
         // List of callback functions to call
-        std::function<void(Config*,unsigned long, stereo_t*)> callback_stereo_gray;
-        std::function<void(Config*,unsigned long, stereo_t*)> callback_stereo_color;
-        std::function<void(Config*,unsigned long, lidar_t*)> callback_lidar;
-        std::function<void(Config*,unsigned long, gpsimu_t*)> callback_gpsimu;
+        std::function<void(Config*,long, stereo_t*)> callback_stereo_gray;
+        std::function<void(Config*,long, stereo_t*)> callback_stereo_color;
+        std::function<void(Config*,long, lidar_t*)> callback_lidar;
+        std::function<void(Config*,long, gpsimu_t*)> callback_gpsimu;
 
 
 

@@ -4,7 +4,9 @@
 #include <boost/date_time.hpp>
 #include <kitti_parser/types/stereo_t.h>
 #include <kitti_parser/types/lidar_t.h>
-
+#include <opencv2/core/core.hpp>
+#include <opencv2/imgcodecs.hpp>
+#include <opencv2/highgui/highgui.hpp>
 
 using namespace std;
 using namespace kitti_parser;
@@ -26,14 +28,28 @@ void Loader::load_all() {
 
     // Load stereo gray
     if(config->has_stereo_gray) {
+        // Load it all
         load_stereo(config->path_data+"image_00/",config->path_data+"image_01/",
                     time_stereo_gray, path_stereo_gray_L, path_stereo_gray_R);
+
+        // Load index values
+        if(time_stereo_gray.size() > 0) {
+            idx_sg = 0;
+            curr_sg = time_stereo_gray.at(0);
+        }
+
     }
 
     // Load stereo color
     if(config->has_stereo_color) {
         load_stereo(config->path_data+"image_02/",config->path_data+"image_03/",
                     time_stereo_color, path_stereo_color_L, path_stereo_color_R);
+
+        // Load index values
+        if(time_stereo_color.size() > 0) {
+            idx_sc = 0;
+            curr_sc = time_stereo_color.at(0);
+        }
     }
 
 
@@ -41,11 +57,18 @@ void Loader::load_all() {
     if(config->has_lidar) {
         load_lidar(config->path_data+"velodyne_points/", time_lidar_avg,
                    time_lidar_start, time_lidar_end, path_lidar);
+
+        // Load index values
+        if(time_lidar_avg.size() > 0) {
+            idx_lidar = 0;
+            curr_lidar = time_lidar_avg.at(0);
+        }
     }
 
 
     // TODO: Do the GPS/IMU reading here
     config->has_gpsimu = false;
+    config->has_lidar = false;
 
     // Debug
     //cout << "Loaded the following files:" << endl;
@@ -134,34 +157,79 @@ void Loader::load_lidar(std::string path_lidar,
 
 }
 
-typedef boost::variant<stereo_t*, lidar_t*, gpsimu_t*> message_types;
-message_types Loader::fetch_latest() {
+Loader::message_types* Loader::fetch_latest() {
 
     // Return value
-    message_types next;
+    message_types* next ;
 
 
     // Compare stereo timestamps
-    if(true) {
-        next = fetch_stereo(timestamp)
+    if((curr_sg < curr_sc || !config->has_stereo_color)
+       && (curr_sg < curr_lidar || !config->has_lidar)
+       && (curr_sg < curr_gps || !config->has_gpsimu) && curr_sg != LONG_MAX) {
+        // Get the next measurement
+        next = new message_types(fetch_stereo(idx_sg, false));
+        // Move time forward
+        idx_sg++;
+        curr_sg = (idx_sg == time_stereo_gray.size())? LONG_MAX : time_stereo_gray.at(idx_sg);
+        return next;
     }
     // See about colored stereo timetamp
-    else if(true) {
-
+    else if((curr_sc < curr_lidar || !config->has_lidar)
+            && (curr_sc < curr_gps || !config->has_gpsimu) && curr_sc != LONG_MAX) {
+        // Get the next measurement
+        next = new message_types(fetch_stereo(idx_sc, true));
+        // Move time forward
+        idx_sc++;
+        curr_sc = (idx_sc == time_stereo_color.size())? LONG_MAX : time_stereo_color.at(idx_sc);
+        return next;
     }
     // See if LIDAR vs GPS is better
-    else if(true) {
+    else if((curr_lidar < curr_gps || !config->has_gpsimu) && curr_lidar != LONG_MAX) {
 
+        // Move time forward
+        idx_lidar++;
+        curr_lidar = (idx_lidar == time_lidar_avg.size())? LONG_MAX : time_lidar_avg.at(idx_lidar);
+        //return next;
     }
-    // TODO: Default to GPS/IMU measurement
-    else {
-
+    // See if GPS/IMU measurement is there
+    else if(curr_gps != LONG_MAX) {
+        // Move time forward
+        //idx_gps++;
+        //curr_gps = (idx_gps == time.size())? LONG_MAX : time.at(idx_gps);
+        //return next;
     }
 
-
-    return next;
+    // Default, we have no measurment to give
+    return nullptr;
 
 }
 
 
 
+
+stereo_t* Loader::fetch_stereo(size_t idx, bool is_color) {
+
+    stereo_t* next = new stereo_t;
+
+    if(is_color) {
+        next->is_color = true;
+        next->timestamp = time_stereo_color.at(idx);
+        next->image_left = cv::imread(path_stereo_color_L.at(idx), CV_LOAD_IMAGE_COLOR);
+        next->image_right = cv::imread(path_stereo_color_R.at(idx), CV_LOAD_IMAGE_COLOR);
+        next->width = next->image_left.cols;
+        next->height = next->image_left.rows;
+    } else {
+        next->is_color = false;
+        next->timestamp = time_stereo_gray.at(idx);
+        next->image_left = cv::imread(path_stereo_gray_L.at(idx), CV_LOAD_IMAGE_GRAYSCALE);
+        next->image_right = cv::imread(path_stereo_gray_R.at(idx), CV_LOAD_IMAGE_GRAYSCALE);
+        next->width = next->image_left.cols;
+        next->height = next->image_left.rows;
+    }
+
+
+    // Return
+    return next;
+
+}
