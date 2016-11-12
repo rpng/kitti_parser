@@ -1,5 +1,6 @@
 #include <iostream>
 #include <kitti_parser/types/stereo_t.h>
+#include <kitti_parser/types/lidar_t.h>
 #include "kitti_parser/Parser.h"
 
 
@@ -9,7 +10,7 @@ using namespace kitti_parser;
 
 
 void handle_stereo(Config* config, long timestamp, stereo_t* data);
-
+void handle_lidar(Config* config, long timestamp, lidar_t* data);
 
 int main(int argc, char** argv) {
 
@@ -51,6 +52,7 @@ int main(int argc, char** argv) {
     // Register the functions
     parser.register_callback_stereo_gray(&handle_stereo);
     parser.register_callback_stereo_color(&handle_stereo);
+    parser.register_callback_lidar(&handle_lidar);
 
     // TODO: Start the parser at normal speed
     parser.run(1.0);
@@ -70,4 +72,10 @@ void handle_stereo(Config* config, long timestamp, stereo_t* data) {
          " (" << data->width << "," << data->width << ") -> " << data->is_color << endl;
 }
 
-
+/**
+ * Test callback function for lidar
+ */
+void handle_lidar(Config* config, long timestamp, lidar_t* data) {
+    cout << "Got new LIDAR bin: " << timestamp << " (" << data->points.at(0).at(0) << ","
+         << data->points.at(0).at(1) << "," << data->points.at(0).at(2) << "," << data->points.at(0).at(3) << ")" << endl;
+}

@@ -68,7 +68,6 @@ void Loader::load_all() {
 
     // TODO: Do the GPS/IMU reading here
     config->has_gpsimu = false;
-    config->has_lidar = false;
 
     // Debug
     //cout << "Loaded the following files:" << endl;
@@ -160,7 +159,7 @@ void Loader::load_lidar(std::string path_lidar,
 Loader::message_types* Loader::fetch_latest() {
 
     // Return value
-    message_types* next ;
+    message_types* next;
 
 
     // Compare stereo timestamps
@@ -186,11 +185,12 @@ Loader::message_types* Loader::fetch_latest() {
     }
     // See if LIDAR vs GPS is better
     else if((curr_lidar < curr_gps || !config->has_gpsimu) && curr_lidar != LONG_MAX) {
-
+        // Get next measurment
+        next = new message_types(fetch_lidar(idx_sc));
         // Move time forward
         idx_lidar++;
         curr_lidar = (idx_lidar == time_lidar_avg.size())? LONG_MAX : time_lidar_avg.at(idx_lidar);
-        //return next;
+        return next;
     }
     // See if GPS/IMU measurement is there
     else if(curr_gps != LONG_MAX) {
@@ -207,7 +207,10 @@ Loader::message_types* Loader::fetch_latest() {
 
 
 
-
+/**
+ * This gets both colored and gray scaled stere images
+ * It loads both images and timestamp into the stereo_t data type
+ */
 stereo_t* Loader::fetch_stereo(size_t idx, bool is_color) {
 
     stereo_t* next = new stereo_t;
@@ -231,5 +234,51 @@ stereo_t* Loader::fetch_stereo(size_t idx, bool is_color) {
 
     // Return
     return next;
+
+}
+
+
+
+/**
+ * This loads velodyne point data from the LIDAR
+ * This loads it into the lidar_t data type
+ * Code was taken from the devkit_raw_data.zip provided by KITTI
+ */
+lidar_t* Loader::fetch_lidar(size_t idx) {
+
+    // Main data type
+    lidar_t* temp = new lidar_t;
+    temp->timestamp = time_lidar_avg.at(idx);
+    temp->timestamp_start = time_lidar_start.at(idx);
+    temp->timestamp_end = time_lidar_end.at(idx);
+
+
+    // allocate 4 MB buffer (only ~130*4*4 KB are needed)
+    int32_t num = 1000000;
+    float *data = (float*)malloc(num*sizeof(float));
+
+    // pointers
+    float *px = data+0;
+    float *py = data+1;
+    float *pz = data+2;
+    float *pr = data+3;
+
+    // load point cloud
+    FILE *stream;
+    stream = fopen (path_lidar.at(idx).c_str(),"rb");
+    num = fread(data,sizeof(float),num,stream)/4;
+    // Loop through and append points
+    for (int32_t i=0; i<num; i++) {
+        // Append
+        std::array<float,4> vals = {*px,*py,*pz,*pr};
+        temp->points.push_back(vals);
+        // Move forward
+        px+=4; py+=4; pz+=4; pr+=4;
+    }
+    fclose(stream);
+
+    // Return
+    temp->num_points = (int)temp->points.size();
+    return temp;
 
 }

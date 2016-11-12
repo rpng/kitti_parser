@@ -1,6 +1,10 @@
 #ifndef KITTI_PARSER_LIDAR_H
 #define KITTI_PARSER_LIDAR_H
 
+#include <array>
+#include <vector>
+
+
 namespace kitti_parser {
 
     typedef struct {
@@ -11,7 +15,7 @@ namespace kitti_parser {
 
         int num_points;
 
-        std::vector<float[4]> points;
+        std::vector<std::array<float,4>> points;
 
 
     } lidar_t;

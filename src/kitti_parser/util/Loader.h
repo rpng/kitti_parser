@@ -78,6 +78,7 @@ namespace kitti_parser {
 
         // Fetch commands, constructs the actual datatype
         stereo_t* fetch_stereo(size_t idx, bool is_color);
+        lidar_t* fetch_lidar(size_t idx);
 
 
     };
