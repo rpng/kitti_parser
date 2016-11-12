@@ -7,6 +7,8 @@
 #include <opencv2/core/core.hpp>
 #include <opencv2/imgcodecs.hpp>
 #include <opencv2/highgui/highgui.hpp>
+#include <boost/filesystem/path.hpp>
+#include <boost/filesystem.hpp>
 
 using namespace std;
 using namespace kitti_parser;
@@ -119,17 +121,28 @@ void Loader::load_stereo(std::string path_left, std::string path_right, std::vec
     int count = 0;
     load_timestamps(path_left+"timestamps.txt", time, count);
 
-    // Create the paths
-    for(int i=0; i<count; i++) {
-        // Create filename => (0000000000.png)
-        // http://stackoverflow.com/a/6143897
-        std::ostringstream ss;
-        ss << std::setw(10) << std::setfill('0') << i;
-        // Append paths
-        pathL.push_back(path_left+"data/"+ss.str()+".png");
-        pathR.push_back(path_right+"data/"+ss.str()+".png");
-        // Debug
-        //cout << path_left+"data/"+ss.str()+".png" << endl;
+    // Loop through all sub folders, assume they are sequential
+    // http://www.boost.org/doc/libs/1_47_0/libs/filesystem/v3/example/tut4.cpp
+    boost::filesystem::path p1(path_left+"data/");
+    vector<boost::filesystem::path> v1;
+    copy(boost::filesystem::directory_iterator(p1), boost::filesystem::directory_iterator(), back_inserter(v1));
+    sort(v1.begin(), v1.end());
+
+    // Append them
+    for (vector<boost::filesystem::path>::const_iterator it(v1.begin()), it_end(v1.end()); it != it_end; ++it) {
+        pathL.push_back((*it).c_str());
+    }
+
+    // Loop through all sub folders, assume they are sequential
+    // http://www.boost.org/doc/libs/1_47_0/libs/filesystem/v3/example/tut4.cpp
+    boost::filesystem::path p2(path_right+"data/");
+    vector<boost::filesystem::path> v2;
+    copy(boost::filesystem::directory_iterator(p2), boost::filesystem::directory_iterator(), back_inserter(v2));
+    sort(v2.begin(), v2.end());
+
+    // Append them
+    for (vector<boost::filesystem::path>::const_iterator it(v2.begin()), it_end(v2.end()); it != it_end; ++it) {
+        pathR.push_back((*it).c_str());
     }
 
 }
@@ -151,18 +164,21 @@ void Loader::load_lidar(std::string path_lidar,
     load_timestamps(path_lidar+"timestamps_start.txt", time_start, count_s);
     load_timestamps(path_lidar+"timestamps_end.txt", time_end, count_e);
 
-    // Create the paths
-    for(int i=0; i<count_a; i++) {
-        // Create filename => (0000000000.bin)
-        // http://stackoverflow.com/a/6143897
-        std::ostringstream ss;
-        ss << std::setw(10) << std::setfill('0') << i;
-        // Append paths
-        pathB.push_back(path_lidar+"data/"+ss.str()+".bin");
-        // Debug
-        //cout << path_lidar+"data/"+ss.str()+".bin" << endl;
-    }
 
+    // Loop through all sub folders, assume they are sequential
+    // http://www.boost.org/doc/libs/1_47_0/libs/filesystem/v3/example/tut4.cpp
+    boost::filesystem::path p(path_lidar+"data/");
+    vector<boost::filesystem::path> v;
+    copy(boost::filesystem::directory_iterator(p), boost::filesystem::directory_iterator(), back_inserter(v));
+
+    // Sort, since directory iteration
+    // Is not ordered on some file systems
+    sort(v.begin(), v.end());
+
+    // Append them
+    for (vector<boost::filesystem::path>::const_iterator it(v.begin()), it_end(v.end()); it != it_end; ++it) {
+        pathB.push_back((*it).c_str());
+    }
 }
 
 Loader::message_types* Loader::fetch_latest() {
@@ -195,7 +211,7 @@ Loader::message_types* Loader::fetch_latest() {
     // See if LIDAR vs GPS is better
     else if((curr_lidar < curr_gps || !config->has_gpsimu) && curr_lidar != LONG_MAX) {
         // Get next measurment
-        next = new message_types(fetch_lidar(idx_sc));
+        next = new message_types(fetch_lidar(idx_lidar));
         // Move time forward
         idx_lidar++;
         curr_lidar = (idx_lidar == time_lidar_avg.size())? LONG_MAX : time_lidar_avg.at(idx_lidar);
