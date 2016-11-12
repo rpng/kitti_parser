@@ -75,7 +75,7 @@ void handle_stereo(Config* config, long timestamp, stereo_t* data) {
          " (" << data->width << "," << data->width << ") -> " << data->is_color << endl;
 
     // Free the data once done
-    free(data);
+    delete data;
 }
 
 /**
@@ -86,7 +86,7 @@ void handle_lidar(Config* config, long timestamp, lidar_t* data) {
          << data->points.at(0).at(1) << "," << data->points.at(0).at(2) << "," << data->points.at(0).at(3) << ")" << endl;
 
     // Free the data once done
-    free(data);
+    delete data;
 }
 
 
@@ -96,5 +96,5 @@ void handle_lidar(Config* config, long timestamp, lidar_t* data) {
 void handle_gps(Config* config, long timestamp, gpsimu_t* data) {
     cout << "Got new GPS/IMU bin: " << timestamp << " - " << data->lat << " | " << data->lon << endl;
     // Free the data once done
-    free(data);
+    delete data;
 }
