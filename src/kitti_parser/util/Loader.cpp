@@ -88,6 +88,9 @@ void Loader::load_timestamps(std::string path_timestamp, std::vector<long>& time
     ifstream file_time(path_timestamp);
     // Load the timestamps
     while(getline(file_time,line)) {
+        // Skip empty lines
+        if(line.empty())
+            continue;
         // Parse data
         // http://www.boost.org/doc/libs/1_55_0/doc/html/date_time/posix_time.html#posix_ex
         boost::posix_time::ptime pt(boost::posix_time::time_from_string(line));
@@ -126,7 +129,7 @@ void Loader::load_stereo(std::string path_left, std::string path_right, std::vec
         pathL.push_back(path_left+"data/"+ss.str()+".png");
         pathR.push_back(path_right+"data/"+ss.str()+".png");
         // Debug
-        cout << path_left+"data/"+ss.str()+".png" << endl;
+        //cout << path_left+"data/"+ss.str()+".png" << endl;
     }
 
 }
@@ -271,7 +274,7 @@ lidar_t* Loader::fetch_lidar(size_t idx) {
 
     // load point cloud
     FILE *stream;
-    stream = fopen (path_lidar.at(idx).c_str(),"rb");
+    stream = fopen(path_lidar.at(idx).c_str(),"rb");
     num = fread(data,sizeof(float),num,stream)/4;
     // Loop through and append points
     for (int32_t i=0; i<num; i++) {
@@ -282,6 +285,7 @@ lidar_t* Loader::fetch_lidar(size_t idx) {
         px+=4; py+=4; pz+=4; pr+=4;
     }
     fclose(stream);
+    free(data);
 
     // Return
     temp->num_points = (int)temp->points.size();

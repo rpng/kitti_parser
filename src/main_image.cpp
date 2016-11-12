@@ -80,6 +80,10 @@ void handle_stereo_gray(Config* config, long timestamp, stereo_t* data) {
     // Display it
     cv::imshow("im3_gray", im3);
     cv::waitKey(1);
+
+    // Free the data once done
+    im3.release();
+    delete data;
 }
 
 
@@ -99,4 +103,8 @@ void handle_stereo_color(Config* config, long timestamp, stereo_t* data) {
     // Display it
     cv::imshow("im3_color", im3);
     cv::waitKey(1);
+
+    // Free the data once done
+    im3.release();
+    delete data;
 }

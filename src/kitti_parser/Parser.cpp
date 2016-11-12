@@ -83,7 +83,7 @@ Parser::Parser(std::string path) {
 
         // Next sub folder
         string subfolder = (*it).c_str();
-        std::cout << (*it) << "\n";
+        //std::cout << (*it) << "\n";
 
         // Check to see is gray camera is there
         if (boost::filesystem::exists(subfolder + "/image_00/")
@@ -156,7 +156,7 @@ void Parser::run(double time_multi) {
         switch (next->which()) {
             // it's an stereo_t
             case 0: {
-                stereo_t *temp_s = boost::get<stereo_t *>(*next);
+                stereo_t* temp_s = boost::get<stereo_t *>(*next);
                 // Send, and check if valid function
                 if (temp_s->is_color && callback_stereo_color){
                     callback_stereo_color.operator()(&config, temp_s->timestamp, temp_s);
@@ -164,6 +164,10 @@ void Parser::run(double time_multi) {
                 // Check if function has been set
                 else if(!temp_s->is_color && callback_stereo_gray) {
                     callback_stereo_gray.operator()(&config, temp_s->timestamp, temp_s);
+                }
+                // Else free it since nobody wants it
+                else {
+                    delete temp_s;
                 }
 
                 break;
@@ -174,6 +178,8 @@ void Parser::run(double time_multi) {
                 // Check if function has been set
                 if(callback_lidar) {
                     callback_lidar.operator()(&config, temp_v->timestamp, temp_v);
+                } else {
+                    delete temp_v;
                 }
                 break;
             }
@@ -183,6 +189,8 @@ void Parser::run(double time_multi) {
                 // Check if function has been set
                 if(callback_gpsimu) {
                     callback_gpsimu.operator()(&config, temp_g->timestamp, temp_g);
+                } else {
+                    delete temp_g;
                 }
                 break;
             }

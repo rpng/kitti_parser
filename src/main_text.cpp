@@ -70,6 +70,9 @@ int main(int argc, char** argv) {
 void handle_stereo(Config* config, long timestamp, stereo_t* data) {
     cout << "Got new stereo image: " << timestamp <<
          " (" << data->width << "," << data->width << ") -> " << data->is_color << endl;
+
+    // Free the data once done
+    free(data);
 }
 
 /**
@@ -78,4 +81,7 @@ void handle_stereo(Config* config, long timestamp, stereo_t* data) {
 void handle_lidar(Config* config, long timestamp, lidar_t* data) {
     cout << "Got new LIDAR bin: " << timestamp << " (" << data->points.at(0).at(0) << ","
          << data->points.at(0).at(1) << "," << data->points.at(0).at(2) << "," << data->points.at(0).at(3) << ")" << endl;
+
+    // Free the data once done
+    free(data);
 }
