@@ -25,7 +25,7 @@ namespace kitti_parser {
         Loader(Config* config);
 
         // Load all text files, and need paths
-        void load_all();
+        void load_all(std::string path);
 
 
         // Fetches the latest measurement that should be processed
@@ -67,7 +67,7 @@ namespace kitti_parser {
 
 
         // Private functions to load each type
-        void load_timestamps(std::string path_timestamp, std::vector<long>& time);
+        void load_timestamps(std::string path_timestamp, std::vector<long>& time, int& ct);
 
         void load_stereo(std::string path_left, std::string path_right, std::vector<long>& time,
                          std::vector<std::string>& pathL, std::vector<std::string>& pathR);

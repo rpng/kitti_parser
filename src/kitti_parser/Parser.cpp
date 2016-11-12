@@ -1,5 +1,8 @@
 #include "kitti_parser/Parser.h"
+#include <iostream>
+#include <algorithm>
 #include <boost/filesystem.hpp>
+#include <boost/range/iterator_range.hpp>
 #include <kitti_parser/types/stereo_t.h>
 #include <kitti_parser/types/lidar_t.h>
 #include <kitti_parser/types/gpsimu_t.h>
@@ -57,32 +60,56 @@ Parser::Parser(std::string path) {
         config.has_calib_vc = true;
     }
 
-    // Check to see is gray camera is there
-    if(boost::filesystem::exists(config.path_data + "image_00/")
-       && boost::filesystem::exists(config.path_data + "image_01/")) {
-        config.has_stereo_gray = true;
-    }
-
-    // Check to see if color camera is there
-    if(boost::filesystem::exists(config.path_data + "image_02/")
-       && boost::filesystem::exists(config.path_data + "image_03/")) {
-        config.has_stereo_color = true;
-    }
-
-    // Check to see if lidar is there
-    if(boost::filesystem::exists(config.path_data + "velodyne_points/")) {
-        config.has_lidar = true;
-    }
-
-    // Check to see if IMU is there
-    if(boost::filesystem::exists(config.path_data + "oxts/")) {
-        config.has_gpsimu = true;
-    }
-
-
-    // Done, load all the data
+    // Create our loader
     loader = new Loader(&config);
-    loader->load_all();
+
+
+    // Loop through all sub folders, assume they are sequential
+    // http://www.boost.org/doc/libs/1_47_0/libs/filesystem/v3/example/tut4.cpp
+    boost::filesystem::path p(config.path_data);
+    vector<boost::filesystem::path> v;
+    copy(boost::filesystem::directory_iterator(p), boost::filesystem::directory_iterator(), back_inserter(v));
+
+    // Sort, since directory iteration
+    // Is not ordered on some file systems
+    sort(v.begin(), v.end());
+
+
+    for (vector<boost::filesystem::path>::const_iterator it(v.begin()), it_end(v.end()); it != it_end; ++it) {
+
+        // Skip if file
+        if(!boost::filesystem::is_directory(*it))
+            continue;
+
+        // Next sub folder
+        string subfolder = (*it).c_str();
+        std::cout << (*it) << "\n";
+
+        // Check to see is gray camera is there
+        if (boost::filesystem::exists(subfolder + "/image_00/")
+            && boost::filesystem::exists(subfolder + "/image_01/")) {
+            config.has_stereo_gray = true;
+        }
+
+        // Check to see if color camera is there
+        if (boost::filesystem::exists(subfolder + "/image_02/")
+            && boost::filesystem::exists(subfolder + "/image_03/")) {
+            config.has_stereo_color = true;
+        }
+
+        // Check to see if lidar is there
+        if (boost::filesystem::exists(subfolder + "/velodyne_points/")) {
+            config.has_lidar = true;
+        }
+
+        // Check to see if IMU is there
+        if (boost::filesystem::exists(subfolder + "/oxts/")) {
+            config.has_gpsimu = true;
+        }
+
+        // Done, load all the data
+        loader->load_all(subfolder);
+    }
 
 }
 
