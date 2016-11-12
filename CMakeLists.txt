@@ -46,7 +46,11 @@ target_include_directories(kitti_parser PUBLIC src)
 include_directories(src ${Boost_INCLUDE_DIRS} ${OpenCV_INCLUDE_DIRS})
 
 # Create the main executable, and link libraries
-add_executable(kitti_parser_main src/main.cpp)
+add_executable(main_text src/main_text.cpp)
 # Link libs ${LCM_LIBRARY} ${Boost_LIBRARIES}
-target_link_libraries(kitti_parser_main kitti_parser ${Boost_LIBRARIES} ${OpenCV_LIBRARIES})
+target_link_libraries(main_text kitti_parser ${Boost_LIBRARIES} ${OpenCV_LIBRARIES})
 
+# Create the main executable, and link libraries
+add_executable(main_image src/main_image.cpp)
+# Link libs ${LCM_LIBRARY} ${Boost_LIBRARIES}
+target_link_libraries(main_image kitti_parser ${Boost_LIBRARIES} ${OpenCV_LIBRARIES})

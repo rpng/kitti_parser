@@ -3,7 +3,8 @@
 This is a small helper library that allows for a developer to register callbacks for the different type of measurements in the KITTI dataset.
 The program is laid out so that the main user interacts with a "Parser" class which handles all the events. In your main method you just need
 to specify the directory of the KITTI dataset, the methods you want it to callback too, and then run it. This is not multithreaded so it will wait
-for the method that it calls to finish before it moved on to the next measurement.
+for the method that it calls to finish before it moved on to the next measurement. There are two example main files, please run those to get a feel
+for how the program interacts. One is just text events, the other displays the stereo images in an OpenCV window.
 
 
 ## Folder Structure
@@ -45,7 +46,7 @@ Point to the "day" folder where it has all the different sequences in it. It loo
 
 ## TODO
 
+* Read in config files
 * Implement the gps/imu messages
 * Add a bit of documentation
-* Example mains
 
