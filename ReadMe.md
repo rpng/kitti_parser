@@ -7,6 +7,13 @@ for the method that it calls to finish before it moved on to the next measuremen
 for how the program interacts. One is just text events, the other displays the stereo images in an OpenCV window.
 
 
+## TODO
+
+* Read in config files
+* Implement the gps/imu messages
+* Add a bit of documentation
+
+
 ## Folder Structure
 
 The folder structure that is expected is that of the kitti datset raw downloader script.
@@ -44,9 +51,4 @@ Point to the "day" folder where it has all the different sequences in it. It loo
 * Boost Library - `sudo apt-get install libboost-all-dev`
 
 
-## TODO
-
-* Read in config files
-* Implement the gps/imu messages
-* Add a bit of documentation
 
