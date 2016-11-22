@@ -35,7 +35,7 @@ set(LIBRARY_FILES
 )
 
 # Include yaml-cpp source files in build
-file(GLOB sources_yaml src/yaml-cpp/*.cpp)
+file(GLOB sources_yaml thirdparty/yaml-cpp/*.cpp)
 
 # Create the core library (excludes the main file)
 add_library(kitti_parser STATIC ${LIBRARY_FILES} ${sources_yaml})
@@ -45,7 +45,7 @@ set_target_properties(kitti_parser PROPERTIES LINKER_LANGUAGE CXX)
 target_include_directories(kitti_parser PUBLIC src)
 
 # Include our header files
-include_directories(src ${Boost_INCLUDE_DIRS} ${OpenCV_INCLUDE_DIRS})
+include_directories(src thirdparty ${Boost_INCLUDE_DIRS} ${OpenCV_INCLUDE_DIRS})
 
 # Create the main executable, and link libraries
 add_executable(main_text src/main_text.cpp)
