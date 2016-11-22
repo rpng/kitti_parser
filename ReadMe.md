@@ -6,14 +6,6 @@ to specify the directory of the KITTI dataset, the methods you want it to callba
 for the method that it calls to finish before it moved on to the next measurement. There are two example main files, please run those to get a feel
 for how the program interacts. One is just text events, the other displays the stereo images in an OpenCV window.
 
-
-## TODO
-
-* Read in config files
-* Implement the gps/imu messages
-* Add a bit of documentation
-
-
 ## Folder Structure
 
 The folder structure that is expected is that of the kitti datset raw downloader script.

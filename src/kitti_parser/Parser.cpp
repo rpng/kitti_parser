@@ -1,12 +1,38 @@
+/**
+ * MIT License
+ *
+ * Copyright (c) 2016 Patrick Geneva <pgeneva@udel.edu>
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ */
+
 #include "kitti_parser/Parser.h"
 #include <iostream>
 #include <algorithm>
 #include <boost/filesystem.hpp>
 #include <boost/range/iterator_range.hpp>
+#include <boost/algorithm/string.hpp>
 #include <yaml-cpp/yaml.h>
 #include <kitti_parser/types/stereo_t.h>
 #include <kitti_parser/types/lidar_t.h>
 #include <kitti_parser/types/gpsimu_t.h>
+#include <boost/lexical_cast.hpp>
 
 
 using namespace std;
@@ -43,7 +69,20 @@ Parser::Parser(std::string path) {
     // Check to see if configuration file CAM to CAM
     if(boost::filesystem::exists(config.path_calib_cc)) {
         // Load in the config file
-        config.calib_cc = YAML::LoadFile(config.path_calib_cc);
+        YAML::Node temp = YAML::LoadFile(config.path_calib_cc);
+        // Loop through nodes, and load each one into a double array
+        for(YAML::const_iterator it=temp.begin();it!=temp.end();++it) {
+            // Debug
+            //std::cout << "Node: " << it->first.as<std::string>() << " - val - " << it->second.as<std::string>() << "\n";
+            // Create node
+            std::string str;
+            stringstream s(it->second.as<std::string>());
+            while(s >> str){
+                double val = (double)stod(str.c_str());
+                config.calib_cc[it->first.as<std::string>()].push_back(val);
+            }
+
+        }
         // Set enabled
         config.has_calib_cc = true;
     }
@@ -51,7 +90,20 @@ Parser::Parser(std::string path) {
     // Check to see if configuration file IMU to VELO
     if(boost::filesystem::exists(config.path_calib_iv)) {
         // Load in the config file
-        config.calib_iv = YAML::LoadFile(config.path_calib_iv);
+        YAML::Node temp = YAML::LoadFile(config.path_calib_iv);
+        // Loop through nodes, and load each one into a double array
+        for(YAML::const_iterator it=temp.begin();it!=temp.end();++it) {
+            // Debug
+            //std::cout << "Node: " << it->first.as<std::string>() << " - val - " << it->second.as<std::string>() << "\n";
+            // Create node
+            std::string str;
+            stringstream s(it->second.as<std::string>());
+            while(s >> str){
+                double val = (double)stod(str.c_str());
+                config.calib_iv[it->first.as<std::string>()].push_back(val);
+            }
+
+        }
         // Set enabled
         config.has_calib_iv = true;
     }
@@ -59,7 +111,20 @@ Parser::Parser(std::string path) {
     // Check to see if configuration file VELO to CAM
     if(boost::filesystem::exists(config.path_calib_vc)) {
         // Load in the config file
-        config.calib_vc = YAML::LoadFile(config.path_calib_vc);
+        YAML::Node temp = YAML::LoadFile(config.path_calib_vc);
+        // Loop through nodes, and load each one into a double array
+        for(YAML::const_iterator it=temp.begin();it!=temp.end();++it) {
+            // Debug
+            //std::cout << "Node: " << it->first.as<std::string>() << " - val - " << it->second.as<std::string>() << "\n";
+            // Create node
+            std::string str;
+            stringstream s(it->second.as<std::string>());
+            while(s >> str){
+                double val = (double)stod(str.c_str());
+                config.calib_vc[it->first.as<std::string>()].push_back(val);
+            }
+
+        }
         // Set enabled
         config.has_calib_vc = true;
     }
